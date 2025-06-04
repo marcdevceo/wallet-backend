@@ -4,16 +4,23 @@ import { connectToDatabase } from "./config/db.js";
 import { rateLimiter } from "./middleware/rateLimiter.js";
 
 import transactionsRoute from "./routes/transactionsRoute.js";
+import job from "./config/cron.js";
 
 dotenv.config();
 
 const app = express();
+
+if(process.env.NODE_ENV==="production") job.start();
 
 app.use(rateLimiter); // Apply rate limiting middleware
 app.use(express.json()); // Middleware to parse JSON request bodies
 app.use("/api/transactions", transactionsRoute); // Use transactions route`
 
 const PORT = process.env.PORT || 5001;
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+})
 
 app.get("/heath", (req, res) => {
   res.status(200).json({ message: "Server is running!" });
